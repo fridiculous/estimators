@@ -1,0 +1,7 @@
+coverage==4.2
+isort==4.2.5
+pluggy==0.3.1
+py==1.4.31
+pytest==3.0.3
+pytest-cov==2.3.1
+tox==2.3.1
