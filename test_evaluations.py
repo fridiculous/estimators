@@ -33,6 +33,7 @@ def test_evaluator_evaluate_without_persistance():
     assert isinstance(er, EvaluationResult)
     assert len(ej.y_test) == len(er.y_predicted)
     assert er.evaluator is ej
+    assert ej.is_persisted is False
 
 
 def test_evaluator_evaluate():
@@ -47,3 +48,4 @@ def test_evaluator_evaluate():
     assert isinstance(er, EvaluationResult)
     assert len(ej.y_test) == len(er.y_predicted)
     assert er.evaluator is ej
+    assert ej.is_persisted is True
