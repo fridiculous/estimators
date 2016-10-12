@@ -1,3 +1,7 @@
+from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy.orm import relationship
+
+from .database import Base, DataBase, PrimaryMixin
 from .datasets import DataSet
 from .estimators import Estimator
 
@@ -10,17 +14,17 @@ class Evaluator:
         self.estimator = options.pop('estimator', None)
         self.X_test = options.pop('X_test', None)
         self.y_test = options.pop('y_test', None)
-        self.is_persisted = False
-        if options:
-            raise ValueError("Unexpected kw arguments: %r" % options.keys())
 
     @property
     def estimator(self):
         return self._estimator_proxy.estimator
 
     @estimator.setter
-    def estimator(self, value):
-        self._estimator_proxy = Estimator(estimator=value)
+    def estimator(self, obj):
+        if isinstance(obj, Estimator):
+            self._estimator_proxy = obj
+        else:
+            self._estimator_proxy = Estimator(estimator=obj)
 
     @property
     def X_test(self):
@@ -40,17 +44,71 @@ class Evaluator:
 
     def evaluate(self, persist=True):
         result = self.estimator.predict(self.X_test)
-        if persist:
-            self.is_persisted = True
-        er = EvaluationResult(result=result, evaluator=self)
+
+        options = {
+            'y_predicted': result,
+            'estimator': self.estimator,
+            'X_test': self.X_test,
+            'y_test': self.y_test,
+        }
+        er = EvaluationResult(**options)
+        er.persist_results()
         return er
 
+    def __repr__(self):
+        return '<Evaluator(id=%s X_test=%s estimator=%s)>' % (
+            self.id, self.X_test, self.estimator)
 
-class EvaluationResult:
+
+class EvaluationResult(Evaluator, PrimaryMixin, Base):
 
     """docstring for EvaluationResult"""
+    __tablename__ = 'result'
+
+    estimator_id = Column(Integer, ForeignKey('estimator.id'))
+    X_test_id = Column(Integer, ForeignKey('dataset.id'), nullable=False)
+    y_test_id = Column(Integer, ForeignKey('dataset.id'))
+    y_predicted_id = Column(Integer, ForeignKey('dataset.id'))
+    _estimator_proxy = relationship("Estimator", backref="EvaluationResult")
+    _X_test_proxy = relationship("DataSet", foreign_keys=X_test_id)
+    _y_test_proxy = relationship("DataSet", foreign_keys=y_test_id)
+    _y_predicted_proxy = relationship("DataSet", foreign_keys=y_predicted_id)
 
     def __init__(self, **options):
-        self.result = options.pop('result')
-        self.evaluator = options.pop('evaluator')
-        self.y_predicted = self.result
+        super().__init__(**options)
+        self.y_predicted = options.pop('y_predicted')
+
+    @property
+    def y_predicted(self):
+        return self._y_predicted_proxy.data
+
+    @y_predicted.setter
+    def y_predicted(self, value):
+        self._y_predicted_proxy = DataSet(data=value)
+
+    def __repr__(self):
+        return '<EvaluationResult(id=%s X_test=%s estimator=%s)>' % (
+            self.id, self.X_test, self.estimator)
+
+    def persist_results(self):
+        db = DataBase()
+
+        session = db.Session()
+        try:
+            session.add(self._estimator_proxy)
+            self._estimator_proxy.persist()
+
+            session.add(self._X_test_proxy)
+            self._X_test_proxy.persist()
+
+            session.add(self._y_test_proxy)
+            self._y_test_proxy.persist()
+
+            session.add(self._y_predicted_proxy)
+            self._y_predicted_proxy.persist()
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
