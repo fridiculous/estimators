@@ -3,7 +3,10 @@ from .database import Base, HashableFileMixin
 
 class DataSet(HashableFileMixin, Base):
 
-    """docstring for DataSet"""
+    """
+    Proxy object for a numpy or pandas data object
+    """
+
     ROOT_DIR = 'files/datasets'
     _object_property_name = '_data'
     _data = None
