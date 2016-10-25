@@ -7,16 +7,15 @@ from estimators import EvaluationResult, Evaluator
 from .factories import DataSetFactory, EstimatorFactory, random_array
 
 
-@pytest.mark.usefixtures("with_session")
-class TestEvaluation:
+class TestEvaluator:
 
     def test_evaluator_init(self):
         obj = EstimatorFactory().estimator
-        X_train = DataSetFactory(_data=random_array(shape=(100, 3))).data
+        X_train = DataSetFactory(shape=(100, 3)).data
         y_train = DataSetFactory().data
         obj.fit(X_train, y_train)
 
-        X_test = DataSetFactory(_data=random_array(shape=(100, 3))).data
+        X_test = DataSetFactory(shape=(100, 3)).data
         y_test = DataSetFactory().data
         job_config = {
             'estimator': obj,
@@ -31,11 +30,11 @@ class TestEvaluation:
 
     def test_evaluator_evaluate(self):
         obj = EstimatorFactory().estimator
-        X_train = DataSetFactory(_data=random_array(shape=(100, 3))).data
+        X_train = DataSetFactory(shape=(100, 3)).data
         y_train = DataSetFactory().data
         obj.fit(X_train, y_train)
 
-        X_test = DataSetFactory(_data=random_array(shape=(100, 3))).data
+        X_test = DataSetFactory(shape=(100, 3)).data
         y_test = DataSetFactory().data
 
         job_config = {
