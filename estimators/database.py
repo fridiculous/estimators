@@ -84,10 +84,11 @@ class HashableFileMixin(PrimaryMixin):
         return self.object_property
 
     def set_object(self, value):
-        object_hash = self.compute_hash(value)
-        self.object_property = value
-        self._hash = object_hash
-        self.file_name = object_hash
+        if value is not None:
+            object_hash = self.compute_hash(value)
+            self.object_property = value
+            self._hash = object_hash
+            self.file_name = object_hash
 
     def persist(self):
         """a private method that persists an object to the filesystem"""
