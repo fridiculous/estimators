@@ -5,6 +5,7 @@ import factory.fuzzy
 import numpy as np
 import pandas as pd
 from factory.alchemy import SQLAlchemyModelFactory
+from pympler import asizeof
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 from estimators import DataSet, Estimator, EvaluationResult, hashing
@@ -13,6 +14,10 @@ from tests.shared import db_session
 
 def compute_hash(obj):
     return hashing.hash(obj)
+
+
+def compute_size(obj):
+    return asizeof.asizeof(obj)
 
 
 def random_array(min_value=0, max_value=100, shape=(100, ), datatype="array"):
@@ -44,6 +49,7 @@ class EstimatorFactory(SQLAlchemyModelFactory):
 
     _hash = factory.LazyAttribute(lambda o: compute_hash(o.estimator))
     _file_name = factory.LazyAttribute(lambda o: 'files/estimators/%s' % o._hash)
+    byte_size = factory.LazyAttribute(lambda o: compute_size(o.estimator))
 
     @factory.post_generation
     def persist_file(self, create, extracted, **kwargs):
@@ -77,6 +83,7 @@ class DataSetFactory(SQLAlchemyModelFactory):
 
     _hash = factory.LazyAttribute(lambda o: compute_hash(o.data))
     _file_name = factory.LazyAttribute(lambda o: 'files/datasets/%s' % o._hash)
+    byte_size = factory.LazyAttribute(lambda o: compute_size(o.data))
 
     @factory.post_generation
     def persist_file(self, create, extracted, **kwargs):

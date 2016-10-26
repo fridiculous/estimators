@@ -1,6 +1,7 @@
 import os
 import pickle
 
+from pympler import asizeof
 from sqlalchemy import Column, DateTime, Integer, String, create_engine, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session
@@ -49,6 +50,7 @@ class HashableFileMixin:
 
     _hash = Column('hash', String(64), nullable=False)  # unique=True,
     _file_name = Column('file_name', String, default=None, nullable=False)
+    byte_size = Column('byte_size', Integer, default=None, nullable=False)
 
     _object_property_name = NotImplementedError()
 
@@ -98,6 +100,7 @@ class HashableFileMixin:
             self.object_property = value
             self._hash = object_hash
             self.file_name = object_hash
+            self.byte_size = asizeof.asizeof(value)
 
     def persist(self):
         """a private method that persists an object to the filesystem"""
