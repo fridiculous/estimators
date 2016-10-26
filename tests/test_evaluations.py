@@ -1,9 +1,12 @@
+import pytest
+
 from estimators import DataSet, Estimator, EvaluationResult, Evaluator
 from tests.factories import (DataSetFactory, EstimatorFactory,
                              EvaluationResultFactory)
 from tests.shared import db_session
 
 
+@pytest.mark.usefixtures("temporary_root_dir")
 class TestEvalulationResult:
 
     def test_estimator_init(self):
@@ -30,6 +33,7 @@ class TestEvalulationResult:
         assert db_session.query(EvaluationResult).all() == [es]
 
 
+@pytest.mark.usefixtures("temporary_root_dir")
 class TestEvaluator:
 
     def test_evaluator_init(self):

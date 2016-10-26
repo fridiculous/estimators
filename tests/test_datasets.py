@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from estimators import DataSet
 from tests.shared import db_session
@@ -6,6 +7,7 @@ from tests.shared import db_session
 from .factories import DataSetFactory
 
 
+@pytest.mark.usefixtures("temporary_root_dir")
 class TestDataSet:
 
     def test_dataset_init(self):
