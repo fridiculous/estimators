@@ -36,14 +36,11 @@ class TestEvalulationResult:
 @pytest.mark.usefixtures("temporary_root_dir")
 class TestEvaluator:
 
-    def test_evaluator_init(self):
-        obj = EstimatorFactory().estimator
-        X_train = DataSetFactory(shape=(100, 3)).data
-        y_train = DataSetFactory().data
-        obj.fit(X_train, y_train)
+    def test_evaluator_init_with_objects(self):
+        obj = EstimatorFactory()
 
-        X_test = DataSetFactory(shape=(100, 3)).data
-        y_test = DataSetFactory().data
+        X_test = DataSetFactory(shape=(100, 3))
+        y_test = DataSetFactory()
         job_config = {
             'estimator': obj,
             'X_test': X_test,
@@ -51,9 +48,25 @@ class TestEvaluator:
         }
         ej = Evaluator(**job_config)
 
-        assert ej.estimator == obj
-        assert ej.X_test.all() == X_test.all()
-        assert ej.y_test.all() == y_test.all()
+        assert ej.estimator == obj.estimator
+        assert ej.X_test.all() == X_test.data.all()
+        assert ej.y_test.all() == y_test.data.all()
+
+    def test_evaluator_init_with_values(self):
+        obj = EstimatorFactory()
+
+        X_test = DataSetFactory(shape=(100, 3))
+        y_test = DataSetFactory()
+        job_config = {
+            'estimator': obj.estimator,
+            'X_test': X_test.data,
+            'y_test': y_test.data
+        }
+        ej = Evaluator(**job_config)
+
+        assert ej.estimator == obj.estimator
+        assert ej.X_test.all() == X_test.data.all()
+        assert ej.y_test.all() == y_test.data.all()
 
     def test_evaluator_evaluate(self):
         obj = EstimatorFactory().estimator

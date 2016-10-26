@@ -8,40 +8,48 @@ from .estimators import Estimator
 
 class EvaluationMixin:
 
+    def _get_proxy_object(self, obj, ProxyKlass, proxy_klass_attribute):
+        """ Returns the proxy object for an input object
+
+        If the object is already the proxy object, return it.
+        Otherwise set the appropriate proxy object to the proxy object's attribute
+        """
+        proxy_object = obj
+        if not isinstance(obj, ProxyKlass):
+            proxy_object = ProxyKlass(**{proxy_klass_attribute: obj})
+        return proxy_object
+
     @property
     def estimator(self):
         return self._estimator_proxy.estimator
 
     @estimator.setter
     def estimator(self, obj):
-        if isinstance(obj, Estimator):
-            self._estimator_proxy = obj
-        else:
-            self._estimator_proxy = Estimator(estimator=obj)
+        self._estimator_proxy = self._get_proxy_object(obj, Estimator, 'estimator')
 
     @property
     def X_test(self):
         return self._X_test_proxy.data
 
     @X_test.setter
-    def X_test(self, value):
-        self._X_test_proxy = DataSet(data=value)
+    def X_test(self, obj):
+        self._X_test_proxy = self._get_proxy_object(obj, DataSet, 'data')
 
     @property
     def y_test(self):
         return self._y_test_proxy.data
 
     @y_test.setter
-    def y_test(self, value):
-        self._y_test_proxy = DataSet(data=value)
+    def y_test(self, obj):
+        self._y_test_proxy = self._get_proxy_object(obj, DataSet, 'data')
 
     @property
     def y_predicted(self):
         return self._y_predicted_proxy.data
 
     @y_predicted.setter
-    def y_predicted(self, value):
-        self._y_predicted_proxy = DataSet(data=value)
+    def y_predicted(self, obj):
+        self._y_predicted_proxy = self._get_proxy_object(obj, DataSet, 'data')
 
 
 class Evaluator(EvaluationMixin):
