@@ -1,7 +1,8 @@
-from .database import Base, HashableFileMixin
+
+from .database import Base, HashableFileMixin, PrimaryMixin
 
 
-class Estimator(HashableFileMixin, Base):
+class Estimator(HashableFileMixin, PrimaryMixin, Base):
 
     """docstring for Estimators"""
     ROOT_DIR = 'files/estimators'
@@ -9,9 +10,6 @@ class Estimator(HashableFileMixin, Base):
     _estimator = None
 
     __tablename__ = 'estimator'
-
-    def __init__(self, **options):
-        self.estimator = options.pop('estimator', None)
 
     @property
     def estimator(self):

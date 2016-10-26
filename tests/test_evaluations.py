@@ -1,10 +1,33 @@
-from unittest.mock import patch
+from estimators import DataSet, Estimator, EvaluationResult, Evaluator
+from tests.factories import (DataSetFactory, EstimatorFactory,
+                             EvaluationResultFactory)
+from tests.shared import db_session
 
-import pytest
 
-from estimators import EvaluationResult, Evaluator
+class TestEvalulationResult:
 
-from .factories import DataSetFactory, EstimatorFactory, random_array
+    def test_estimator_init(self):
+        estimator = EstimatorFactory().estimator
+        X_test = DataSetFactory(shape=(100, 4)).data
+        y_test = DataSetFactory().data
+        y_predicted = DataSetFactory().data
+
+        er = EvaluationResult()
+        er.estimator = estimator
+        er.X_test = X_test
+        er.y_test = y_test
+        er.y_predicted = y_predicted
+
+    def test_estimator_init_with_factory(self):
+        es = EvaluationResultFactory()
+
+        assert isinstance(es._estimator_proxy, Estimator)
+        assert isinstance(es._X_test_proxy, DataSet)
+        assert isinstance(es._y_test_proxy, DataSet)
+        assert isinstance(es._y_predicted_proxy, DataSet)
+
+        # assert persistance
+        assert db_session.query(EvaluationResult).all() == [es]
 
 
 class TestEvaluator:
@@ -40,11 +63,14 @@ class TestEvaluator:
         job_config = {
             'estimator': obj,
             'X_test': X_test,
-            'y_test': y_test
+            'y_test': y_test,
+            'session': db_session
         }
-        with patch.object(EvaluationResult, 'persist_results', return_value=None):
-            ej = Evaluator(**job_config)
+        ej = Evaluator(**job_config)
 
-            er = ej.evaluate()
-            assert isinstance(er, EvaluationResult)
-            assert len(ej.y_test) == len(er.y_predicted)
+        er = ej.evaluate()
+        assert isinstance(er, EvaluationResult)
+        assert er.y_test is not er.y_predicted
+        assert len(ej.y_test) == len(er.y_predicted)
+
+        assert db_session.query(EvaluationResult).all()[-1].id == er.id

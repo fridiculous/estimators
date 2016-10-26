@@ -1,11 +1,9 @@
-from .factories import DataSetFactory, random_array
+import numpy as np
 
 from estimators import DataSet
-
-import numpy as np
-import pytest
-
 from tests.shared import db_session
+
+from .factories import DataSetFactory
 
 
 class TestDataSet:

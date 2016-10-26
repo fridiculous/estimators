@@ -6,14 +6,7 @@ from .datasets import DataSet
 from .estimators import Estimator
 
 
-class Evaluator:
-
-    """docstring for Evaluator"""
-
-    def __init__(self, **options):
-        self.estimator = options.pop('estimator', None)
-        self.X_test = options.pop('X_test', None)
-        self.y_test = options.pop('y_test', None)
+class EvaluationMixin:
 
     @property
     def estimator(self):
@@ -42,6 +35,30 @@ class Evaluator:
     def y_test(self, value):
         self._y_test_proxy = DataSet(data=value)
 
+    @property
+    def y_predicted(self):
+        return self._y_predicted_proxy.data
+
+    @y_predicted.setter
+    def y_predicted(self, value):
+        self._y_predicted_proxy = DataSet(data=value)
+
+
+class Evaluator(EvaluationMixin):
+
+    """docstring for Evaluator"""
+
+    def __init__(self, **options):
+        self.estimator = options.pop('estimator', None)
+        self.X_test = options.pop('X_test', None)
+        self.y_test = options.pop('y_test', None)
+        self.y_predicted = options.pop('y_predicted', None)
+
+        self.session = options.pop('session', None)
+        if not self.session:
+            db = DataBase()
+            self.session = db.Session()
+
     def evaluate(self, persist=True):
         result = self.estimator.predict(self.X_test)
 
@@ -52,15 +69,35 @@ class Evaluator:
             'y_test': self.y_test,
         }
         er = EvaluationResult(**options)
-        er.persist_results()
+        self.persist_results(er)
         return er
 
+    def persist_results(self, er):
+
+        try:
+            self.session.add(er._estimator_proxy)
+            self._estimator_proxy.persist()
+
+            self.session.add(er._X_test_proxy)
+            self._X_test_proxy.persist()
+
+            self.session.add(er._y_test_proxy)
+            self._y_test_proxy.persist()
+
+            self.session.add(er._y_predicted_proxy)
+            self._y_predicted_proxy.persist()
+            self.session.commit()
+        except:
+            self.session.rollback()
+        finally:
+            self.session.close()
+
     def __repr__(self):
-        return '<Evaluator(id=%s X_test=%s estimator=%s)>' % (
-            self.id, self.X_test, self.estimator)
+        return '<Evaluator(X_test=%s estimator=%s)>' % (
+            self.X_test, self.estimator)
 
 
-class EvaluationResult(Evaluator, PrimaryMixin, Base):
+class EvaluationResult(EvaluationMixin, PrimaryMixin, Base):
 
     """docstring for EvaluationResult"""
     __tablename__ = 'result'
@@ -74,41 +111,6 @@ class EvaluationResult(Evaluator, PrimaryMixin, Base):
     _y_test_proxy = relationship("DataSet", foreign_keys=y_test_id)
     _y_predicted_proxy = relationship("DataSet", foreign_keys=y_predicted_id)
 
-    def __init__(self, **options):
-        super().__init__(**options)
-        self.y_predicted = options.pop('y_predicted')
-
-    @property
-    def y_predicted(self):
-        return self._y_predicted_proxy.data
-
-    @y_predicted.setter
-    def y_predicted(self, value):
-        self._y_predicted_proxy = DataSet(data=value)
-
     def __repr__(self):
         return '<EvaluationResult(id=%s X_test=%s estimator=%s)>' % (
             self.id, self.X_test, self.estimator)
-
-    def persist_results(self):
-        db = DataBase()
-
-        session = db.Session()
-        try:
-            session.add(self._estimator_proxy)
-            self._estimator_proxy.persist()
-
-            session.add(self._X_test_proxy)
-            self._X_test_proxy.persist()
-
-            session.add(self._y_test_proxy)
-            self._y_test_proxy.persist()
-
-            session.add(self._y_predicted_proxy)
-            self._y_predicted_proxy.persist()
-            session.commit()
-        except:
-            session.rollback()
-            raise
-        finally:
-            session.close()

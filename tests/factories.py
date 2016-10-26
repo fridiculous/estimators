@@ -1,15 +1,14 @@
 from datetime import datetime
 
 import factory
-import factory.alchemy
 import factory.fuzzy
 import numpy as np
 import pandas as pd
+from factory.alchemy import SQLAlchemyModelFactory
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
-from estimators import DataSet, Estimator, hashing
-
-from tests.shared import SessionFactory
+from estimators import DataSet, Estimator, EvaluationResult, hashing
+from tests.shared import db_session
 
 
 def compute_hash(obj):
@@ -28,10 +27,11 @@ def random_array(min_value=0, max_value=100, shape=(100, ), datatype="array"):
     return l
 
 
-class EstimatorFactory(SessionFactory):
+class EstimatorFactory(SQLAlchemyModelFactory):
 
     class Meta:
         model = Estimator
+        sqlalchemy_session = db_session
 
     id = factory.Sequence(lambda n: n)
     create_date = factory.LazyFunction(datetime.now)
@@ -45,11 +45,17 @@ class EstimatorFactory(SessionFactory):
     _hash = factory.LazyAttribute(lambda o: compute_hash(o.estimator))
     _file_name = factory.LazyAttribute(lambda o: 'files/estimators/%s' % o._hash)
 
+    @factory.post_generation
+    def persist_file(self, create, extracted, **kwargs):
+        self.persist()
+        return self.is_persisted
 
-class DataSetFactory(SessionFactory):
+
+class DataSetFactory(SQLAlchemyModelFactory):
 
     class Meta:
         model = DataSet
+        sqlalchemy_session = db_session
 
     class Params:
         min_random_value = 0
@@ -71,3 +77,28 @@ class DataSetFactory(SessionFactory):
 
     _hash = factory.LazyAttribute(lambda o: compute_hash(o.data))
     _file_name = factory.LazyAttribute(lambda o: 'files/datasets/%s' % o._hash)
+
+    @factory.post_generation
+    def persist_file(self, create, extracted, **kwargs):
+        self.persist()
+        return self.is_persisted
+
+
+class EvaluationResultFactory(SQLAlchemyModelFactory):
+
+    class Meta:
+        model = EvaluationResult
+        sqlalchemy_session = db_session
+
+    id = factory.Sequence(lambda n: n)
+    create_date = factory.LazyFunction(datetime.now)
+
+    _estimator_proxy = factory.SubFactory(EstimatorFactory)
+    _X_test_proxy = factory.SubFactory(DataSetFactory, shape=(100, 3))
+    _y_test_proxy = factory.SubFactory(DataSetFactory)
+    _y_predicted_proxy = factory.SubFactory(DataSetFactory)
+
+    estimator_id = factory.SelfAttribute('_estimator_proxy.id')
+    X_test_id = factory.SelfAttribute('_X_test_proxy.id')
+    y_test_id = factory.SelfAttribute('_y_test_proxy.id')
+    y_predicted_id = factory.SelfAttribute('_y_predicted_proxy.id')

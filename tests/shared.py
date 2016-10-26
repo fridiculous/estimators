@@ -1,17 +1,11 @@
 from estimators import DataBase
-import factory.alchemy
 
 
-def create_session():
+def create_db():
     db = DataBase(url='sqlite://')
     db.initialize_database()
-    return db.Session
+    return db
 
-db_session = create_session()
-
-
-class SessionFactory(factory.alchemy.SQLAlchemyModelFactory):
-
-    class Meta:
-        abstract = True
-        sqlalchemy_session = db_session
+db = create_db()
+db_session = db.Session
+db_engine = db.engine

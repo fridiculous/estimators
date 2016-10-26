@@ -1,8 +1,9 @@
-from .database import Base, HashableFileMixin
 from sqlalchemy import Column, Integer
 
+from .database import Base, HashableFileMixin, PrimaryMixin
 
-class DataSet(HashableFileMixin, Base):
+
+class DataSet(HashableFileMixin, PrimaryMixin, Base):
 
     """
     Proxy object for a numpy or pandas data object
@@ -15,9 +16,6 @@ class DataSet(HashableFileMixin, Base):
     _data = None
 
     __tablename__ = 'dataset'
-
-    def __init__(self, **options):
-        self.data = options.pop('data', None)
 
     @property
     def data(self):

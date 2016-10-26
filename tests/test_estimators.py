@@ -1,12 +1,10 @@
-from .factories import EstimatorFactory
-
-from estimators import Estimator
-
-import pytest
-
-from tests.shared import db_session
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble.forest import BaseForest
+
+from estimators import Estimator
+from tests.shared import db_session
+
+from .factories import EstimatorFactory
 
 
 class TestEstimator:
