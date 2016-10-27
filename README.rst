@@ -1,102 +1,139 @@
 
-.. image:: https://travis-ci.org/fridiculous/django-estimators.svg?branch=master
-    :target: https://travis-ci.org/fridiculous/django-estimators
+.. image:: https://travis-ci.org/fridiculous/estimators.svg?branch=master
+    :target: https://travis-ci.org/fridiculous/estimators
 
-.. image:: https://landscape.io/github/fridiculous/django-estimators/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/fridiculous/django-estimators/master
-   
-Django-Estimators
-=====
+.. image:: https://landscape.io/github/fridiculous/estimators/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/fridiculous/estimators/master
+   :alt: Code Health
 
-Django-Estimators helps persist and track machine learning models aka estimators.
+Estimators
+==========
 
-You can use this to version models, track and deploy models.  It's highly extensible and can be used with almost any python object (scikit-learn, numpy arrays, modules, methods).
+Machine Learning Versioning made Simple
 
+
+Intro
 -----
+
+Estimators helps version and track machine learning models and datasets.
+
+It can be used to version and deploy models.  It's highly extensible and can be used with almost any python object (scikit-learn, numpy arrays, and custom modules).
+
+This repo utilizes sqlalchemy as an ORM.  If you're using django, try `django-estimators <https://github.com/fridiculous/django-estimators.git>`_ instead.
 
 
 Installation
 ------------
 
 
-Django-estimators is on PyPI, so just run: ::
+Estimators is not yet on PyPI, so just run: ::
 
-    pip install django-estimators
+    pip install git+https://github.com/fridiculous/estimators.git
 
 
-Quick start
+Basic Usage
 -----------
 
-1. Add "estimators" to your INSTALLED_APPS django setting like this
+We can see the power of Estimators in 2 steps.
+First let's imagine you're building a classifer on dataset like so...
+::
+        from sklearn.ensemble import RandomForestClassifier
+        import numpy as np
+
+        rfc = RandomForestClassifier()
+        # fake dataset
+        X =  np.random.randint(0, 20, (100, 5))
+        y =  np.random.randint(0, 3, (100,))
+
+        # pseudo-crossvalidation
+        X_train, X_test = X[:70], X[70:]
+        y_train, y_test = y[:70], y[70:] 
+        rfc.fit(X_train, y_train)
+
+
+1. Now import an `Evaluator` object that builds a plan 
+:: 
+        from estimators import Evaluator
+
+        plan = Evaluator()
+        plan.estimator = rfc
+        plan.X_test = X_test
+        plan.y_test = y_test
+
+        # persist all objects upon prediction
+        result = plan.evaluate()
+
+        # including our predictions
+        result.y_predicted
+
+
+2.  At a later date, you can retrieve your model using sqlalchemy orm. 
 ::
 
-    INSTALLED_APPS = [
-        ...
-        'estimators',
-    ]
-  
-2. To create the estimators table, run
-::
-    python manage.py migrate
+        from estimators import DataBase, EvaluationResult
+        db = DataBase()
 
-3. Run `python manage.py shell` and get create new models like so
-::
-    from estimators.models import Estimator
-    est = Estimator()
+        result = db.Session.query(EvaluationResult).first()
 
-    # uses sklearn, but any object would work
-    from sklearn.ensemble import RandomForestClassifier
-    est.estimator = RandomForestClassifer()
-    
-    est.description = 'a simple stats model'
-    est.save()
+        # which has all our attributes
+        result.id
+        result.create_date
+        result.estimator
+        result.X_test
+        result.y_test
+        result.y_predicted
 
-4.  Retrieve your model, using the usual django orm at a later time
+
+Advanced Usage
+--------------
+
+Continuing with the above example, we can pull specific estimators or datasets 
 ::
 
-    est = Estimator.objects.filter(description='a simple stats model')
-    # now use your estimator
-    est.estimator.predict(X)
+        from estimators import Estimator, DataSet
 
-Using with Notebook (or without django shell)
----------------------------------------------
+        # to return an estimator proxy object
+        es = db.Session.query(Estimator).first()
+        
+        # return our fitted RandomForestClassifier
+        es.estimator 
 
-In order to have access to the django db, you'll need to set up the environment variable to load up your django project.  In ipython, you can set the environment variable `DJANGO_SETTINGS_MODULE` to `your_project_name.settings` like so::
-
-    import os
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "your_project_name.settings")
-    import django
-    django.setup()
-
-Now you can continue on as usual... ::
-
-    from estimators.models import Estimator
+        # to returns all datasets as proxy objects
+ 
+        ds = db.Session.query(DataSet).all()
+        ds[0].shape
+        ds[0].data
 
 
-Use Cases
----------
+Furthermore, we can run more evaluations using our new proxy objects.  The Evaluator
+object handles the setting appropriately for proxy objects such as Estimator and DataSet.
+::
 
-If you already have the model::
+        plan = Evaluator() 
+        plan.estimator = es 
+        plan.X_test = result.X_test 
+        plan.y_test = result.y_test 
 
-    est = Estimator.get_by_estimator(object)
-
-If you know the unique hash of the model::
-
-    est = Estimator.get_by_hash('358e500ba0643ec82d15cbfa8adc114c')
+        result_two = plan.evaluate()
 
 
-If you aren't sure if it exists, the recommended method is to use the `get_or_create` method::
+Additionally, we can pass the sqlalchemy session object to the evaluator.
+::
+        from estimators import DataBase
+        db = DataBase(url='sqlite://')
 
-    est = Estimator.get_or_create(object)
+        plan = Evaluator()
+        plan.session = db.Session
+        # and continue as expected otherwise
 
 
 Development Installation 
 ------------------------
 
-To install the latest version of django-estimators, clone the repo, change directory to the repo, and pip install it into your current virtual environment.::
+To install the latest version of estimators, clone the repo, change directory to the repo, and pip install it into your current virtual environment.::
 
-    $ git clone git@github.com:fridiculous/django-estimators.git
-    $ cd django-estimators
+    $ git clone git@github.com:fridiculous/estimators.git
+    $ cd estimators
     $ <activate your project’s virtual environment>
     (virtualenv) $ pip install -e .  # the dot specifies for this current repo
 
