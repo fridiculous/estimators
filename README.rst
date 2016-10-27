@@ -35,23 +35,24 @@ Basic Usage
 -----------
 
 We can see the power of Estimators in 2 steps.
-First let's imagine you're building a classifer on dataset like so...
+For a use case, let's say we are developing a classifier.  We'll 
 ::
+        from sklearn.datasets import load_digits
         from sklearn.ensemble import RandomForestClassifier
-        import numpy as np
+
+        digits = load_digits() # 1797 by 64
+        X = digits.data
+        y = digits.target 
+
+        # simple splitting for validation testing
+        X_train, X_test = X[:1200], X[1200:]
+        y_train, y_test = y[:1200], y[1200:] 
 
         rfc = RandomForestClassifier()
-        # fake dataset
-        X =  np.random.randint(0, 20, (100, 5))
-        y =  np.random.randint(0, 3, (100,))
-
-        # pseudo-crossvalidation
-        X_train, X_test = X[:70], X[70:]
-        y_train, y_test = y[:70], y[70:] 
         rfc.fit(X_train, y_train)
 
 
-1. Now import an `Evaluator` object that builds a plan 
+1. First import an `Evaluator` object that instantiates an evaluation plan.  Set the `estimator`, `X_test` and `y_test` to that evaluator object.
 :: 
         from estimators import Evaluator
 
@@ -67,7 +68,7 @@ First let's imagine you're building a classifer on dataset like so...
         result.y_predicted
 
 
-2.  At a later date, you can retrieve your model using sqlalchemy orm. 
+2.  At a later date, we can retrieve the results, along with the original estimator, X_test dataset and y_test dataset using sqlalchemy orm. 
 ::
 
         from estimators import DataBase, EvaluationResult
@@ -101,23 +102,27 @@ Continuing with the above example, we can pull specific estimators or datasets
         # to returns all datasets as proxy objects
  
         ds = db.Session.query(DataSet).all()
-        ds[0].shape
         ds[0].data
+
+But we can continue on to use all of sqlalchemy's expressions
+::
+        X_test_one = db.Session.query(DataSet).filter(DataSet.hash=='a381b220d0cd271d608a27eb52dfb654').first()
+        y_test_one = db.Session.query(DataSet).filter(DataSet.hash=='fe773b5c53aec02fd98ffc65feb4714d').first()
 
 
 Furthermore, we can run more evaluations using our new proxy objects.  The Evaluator
-object handles the setting appropriately for proxy objects such as Estimator and DataSet.
+object handles the proxy Estimator and DataSet objects just like regular data.
 ::
 
         plan = Evaluator() 
         plan.estimator = es 
-        plan.X_test = result.X_test 
-        plan.y_test = result.y_test 
+        plan.X_test = X_test_one
+        plan.y_test = y_test_one
 
         result_two = plan.evaluate()
 
 
-Additionally, we can pass the sqlalchemy session object to the evaluator.
+Additionally if we want to use a different database connection, we can pass the sqlalchemy session object to the evaluator.
 ::
         from estimators import DataBase
         db = DataBase(url='sqlite://')

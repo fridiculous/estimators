@@ -4,6 +4,7 @@ import pickle
 from pympler import asizeof
 from sqlalchemy import Column, DateTime, Integer, String, create_engine, func
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.session import sessionmaker
 
@@ -19,7 +20,7 @@ class DataBase:
 
         self.engine = create_engine(
             os.environ.get('DATABASE_URL', url),
-            echo=True
+            echo=False
         )
         self.Session = scoped_session(sessionmaker(
             bind=self.engine,
@@ -63,11 +64,11 @@ class HashableFileMixin:
     def compute_hash(cls, obj):
         return hashing.hash(obj)
 
-    @property
+    @hybrid_property
     def hash(self):
         return self._hash
 
-    @property
+    @hybrid_property
     def file_name(self):
         return self._file_name
 
