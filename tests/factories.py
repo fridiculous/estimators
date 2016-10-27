@@ -9,7 +9,7 @@ from pympler import asizeof
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 from estimators import DataSet, Estimator, EvaluationResult, hashing
-from tests.shared import db_session
+from tests.shared import db
 
 
 def compute_hash(obj):
@@ -36,7 +36,7 @@ class EstimatorFactory(SQLAlchemyModelFactory):
 
     class Meta:
         model = Estimator
-        sqlalchemy_session = db_session
+        sqlalchemy_session = db.Session
 
     id = factory.Sequence(lambda n: n)
     create_date = factory.LazyFunction(datetime.now)
@@ -61,7 +61,7 @@ class DataSetFactory(SQLAlchemyModelFactory):
 
     class Meta:
         model = DataSet
-        sqlalchemy_session = db_session
+        sqlalchemy_session = db.Session
 
     class Params:
         min_random_value = 0
@@ -95,7 +95,7 @@ class EvaluationResultFactory(SQLAlchemyModelFactory):
 
     class Meta:
         model = EvaluationResult
-        sqlalchemy_session = db_session
+        sqlalchemy_session = db.Session
 
     id = factory.Sequence(lambda n: n)
     create_date = factory.LazyFunction(datetime.now)

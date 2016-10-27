@@ -3,7 +3,7 @@ import pytest
 from estimators import DataSet, Estimator, EvaluationResult, Evaluator
 from tests.factories import (DataSetFactory, EstimatorFactory,
                              EvaluationResultFactory)
-from tests.shared import db_session
+from tests.shared import db
 
 
 @pytest.mark.usefixtures("temporary_root_dir")
@@ -30,7 +30,7 @@ class TestEvalulationResult:
         assert isinstance(es._y_predicted_proxy, DataSet)
 
         # assert persistance
-        assert db_session.query(EvaluationResult).all() == [es]
+        assert db.Session.query(EvaluationResult).all() == [es]
 
 
 @pytest.mark.usefixtures("temporary_root_dir")
@@ -81,7 +81,7 @@ class TestEvaluator:
             'estimator': obj,
             'X_test': X_test,
             'y_test': y_test,
-            'session': db_session
+            'session': db.Session
         }
         ej = Evaluator(**job_config)
 
@@ -90,4 +90,4 @@ class TestEvaluator:
         assert er.y_test is not er.y_predicted
         assert len(ej.y_test) == len(er.y_predicted)
 
-        assert db_session.query(EvaluationResult).all()[-1].id == er.id
+        assert db.Session.query(EvaluationResult).all()[-1].id == er.id

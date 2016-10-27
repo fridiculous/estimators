@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from estimators import DataSet
-from tests.shared import db_session
+from tests.shared import db
 
 from .factories import DataSetFactory
 
@@ -31,4 +31,23 @@ class TestDataSet:
         assert ds.n_cols == 3
 
         # assert persistance
-        assert db_session.query(DataSet).all() == [ds]
+        assert db.Session.query(DataSet).all() == [ds]
+
+    def test_dataset_init_as_list_with_factory(self):
+        ds = DataSetFactory(shape=(17, 3), datatype='list')
+
+        assert isinstance(ds, DataSet)
+        assert isinstance(ds.data, list)
+        assert ds.n_rows == 17
+        assert ds.n_cols == 3
+
+        # assert persistance
+        assert db.Session.query(DataSet)[-1] == ds
+
+    def test_dataset_load(self):
+        ds = db.Session.query(DataSet)[-1]
+
+        assert isinstance(ds, DataSet)
+        assert isinstance(ds.data, list)
+        assert ds.n_rows == 17
+        assert ds.n_cols == 3

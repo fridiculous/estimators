@@ -3,7 +3,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble.forest import BaseForest
 
 from estimators import Estimator
-from tests.shared import db_session
+from tests.shared import db
 
 from .factories import EstimatorFactory
 
@@ -27,4 +27,4 @@ class TestEstimator:
         assert isinstance(es.estimator, BaseForest)
 
         # assert persistance
-        assert db_session.query(Estimator).all() == [es]
+        assert db.Session.query(Estimator).all() == [es]

@@ -7,5 +7,3 @@ def create_db():
     return db
 
 db = create_db()
-db_session = db.Session
-db_engine = db.engine

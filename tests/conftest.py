@@ -1,4 +1,3 @@
-# no fixtures are needs at the moment
 import os
 import tempfile
 
