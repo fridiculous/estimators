@@ -4,7 +4,7 @@ import pytest
 from estimators import DataSet
 from tests.shared import db
 
-from .factories import DataSetFactory
+from tests.factories import DataSetFactory
 
 
 @pytest.mark.usefixtures("temporary_root_dir")

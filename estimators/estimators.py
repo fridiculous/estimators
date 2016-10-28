@@ -1,15 +1,15 @@
 
-from .database import Base, HashableFileMixin, PrimaryMixin
+from estimators.database import Base, HashableFileMixin, PrimaryMixin
 
 
 class Estimator(HashableFileMixin, PrimaryMixin, Base):
 
     """A database model and proxy object for estimators.
 
-    The Estimator class is the data model for the table `estimator`. 
+    The Estimator class is the data model for the table `estimator`.
 
     The Estimator object functions as a proxy for the estimator model,
-    which can be accessed by the `estimator` property. 
+    which can be accessed by the `estimator` property.
     """
 
     ROOT_DIR = 'files/estimators'

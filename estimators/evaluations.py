@@ -1,9 +1,9 @@
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
-from .database import Base, DataBase, PrimaryMixin
-from .datasets import DataSet
-from .estimators import Estimator
+from estimators.database import Base, DataBase, PrimaryMixin
+from estimators.datasets import DataSet
+from estimators.estimators import Estimator
 
 
 class EvaluationMixin:
