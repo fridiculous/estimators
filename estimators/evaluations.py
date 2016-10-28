@@ -8,6 +8,8 @@ from .estimators import Estimator
 
 class EvaluationMixin:
 
+    """A list of common methods and attributes for evaluations"""
+
     def _get_proxy_object(self, obj, ProxyKlass, proxy_klass_attribute):
         """ Returns the proxy object for an input object
 
@@ -54,7 +56,13 @@ class EvaluationMixin:
 
 class Evaluator(EvaluationMixin):
 
-    """docstring for Evaluator"""
+    """Instantiates an evaluation plan.
+
+    An evaluator object takes an estimator, X_test and y_test as params.
+    Those can be DataSet objects or data in themselves.
+
+    Once set, the evaluator aka evaluation plan runs .evaluate()
+    """
 
     def __init__(self, **options):
         self.estimator = options.pop('estimator', None)
@@ -107,7 +115,15 @@ class Evaluator(EvaluationMixin):
 
 class EvaluationResult(EvaluationMixin, PrimaryMixin, Base):
 
-    """docstring for EvaluationResult"""
+    """A database model for evaluation results.
+
+    The EvaluationResult class is the data model for the table `result`.
+
+    The EvaluationResult has relationships to an Estimator
+    object and to 3 DataSet objects: X_test, y_test, y_predicted
+
+    """
+
     __tablename__ = 'result'
 
     estimator_id = Column(Integer, ForeignKey('estimator.id'))

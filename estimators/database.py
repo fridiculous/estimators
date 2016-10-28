@@ -13,10 +13,21 @@ from . import hashing
 
 class DataBase:
 
+    """ Returns a DataBase client object.
+
+    A DataBase object has a sqlalchemy engine and a sqlalchemy Session object.
+    The engine can be configured to work on a variety of connections.
+
+    By default, the DataBase object takes a url corsponding to the engine URI.
+
+    For more info, see:
+        http://docs.sqlalchemy.org/en/latest/core/engines_connections.html
+        http://docs.sqlalchemy.org/en/latest/orm/session.html
+
+    The DataBase object also has the ability to initialize and drop a database.
+    """
+
     def __init__(self, url='sqlite:///default.db'):
-        """
-        devdb = 'sqlite:///:memory:'
-        """
 
         self.engine = create_engine(
             os.environ.get('DATABASE_URL', url),
@@ -43,11 +54,15 @@ Base = declarative_base()
 
 class PrimaryMixin:
 
+    """A sqlachemy schema mixin containing an id and a create_date."""
+
     id = Column('id', Integer, primary_key=True)
     create_date = Column('create_date', DateTime, default=func.now())
 
 
 class HashableFileMixin:
+
+    """A sqlachemy schema mixin containing a hash, a file_name and a byte_size"""
 
     _hash = Column('hash', String(64), nullable=False)  # unique=True,
     _file_name = Column('file_name', String, default=None, nullable=False)
