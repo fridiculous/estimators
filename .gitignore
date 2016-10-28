@@ -91,3 +91,6 @@ ENV/
 
 # Sqlite3 db
 *.sqlite3
+
+# default common filesystem
+files/*
