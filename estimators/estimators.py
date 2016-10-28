@@ -1,11 +1,30 @@
 
+from .database import Base, HashableFileMixin, PrimaryMixin
 
-class Estimator:
 
-    """docstring for Estimators"""
+class Estimator(HashableFileMixin, PrimaryMixin, Base):
 
-    def __init__(self, **options):
-        self.estimator = options.pop('estimator', None)
+    """A database model and proxy object for estimators.
 
-        if options:
-            raise ValueError("Unexpected kw arguments: %r" % options.keys())
+    The Estimator class is the data model for the table `estimator`. 
+
+    The Estimator object functions as a proxy for the estimator model,
+    which can be accessed by the `estimator` property. 
+    """
+
+    ROOT_DIR = 'files/estimators'
+    _object_property_name = '_estimator'
+    _estimator = None
+
+    __tablename__ = 'estimator'
+
+    @property
+    def estimator(self):
+        return self.get_object()
+
+    @estimator.setter
+    def estimator(self, obj):
+        self.set_object(obj)
+
+    def __repr__(self):
+        return '<Estimator(id=%s hash=%s %s)>' % (self.id, self.hash, self.estimator)
