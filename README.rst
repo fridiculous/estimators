@@ -34,7 +34,7 @@ Estimators is not yet on PyPI, so just run: ::
 Environment Setup
 -----------------
 
-Before we can we need to, one-time initialize our database and environments.  In future releases, we anticipate this step will be simplified.
+First, we need to initialize our database and filesystem.  This only needs to happen once per database/filesystem. In future releases, we anticipate this step will be simplified.
 ::
 
     from estimators import Estimator, DataSet, DataBase
