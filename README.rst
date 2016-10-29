@@ -28,7 +28,20 @@ Installation
 
 Estimators is not yet on PyPI, so just run: ::
 
-    pip install git+https://github.com/fridiculous/estimators.git
+    pip install estimators
+
+
+Environment Setup
+-----------------
+
+First, we need to initialize our database and filesystem.  This only needs to happen once per database/filesystem. In future releases, we anticipate this step will be simplified.
+::
+
+    from estimators import Estimator, DataSet, DataBase
+    db = DataBase()
+    db.initialize_database()
+    Estimator.initialize_root_dir()
+    DataSet.initialize_root_dir()
 
 
 Basic Usage
@@ -38,54 +51,54 @@ We can see the power of Estimators in 2 steps.
 Let's say we are developing a classifier. We'll load up the data, split it for validation, and then create and train a model.
 ::
 
-        from sklearn.datasets import load_digits
-        from sklearn.ensemble import RandomForestClassifier
+    from sklearn.datasets import load_digits
+    from sklearn.ensemble import RandomForestClassifier
 
-        digits = load_digits() # 1797 by 64
-        X = digits.data
-        y = digits.target
+    digits = load_digits() # 1797 by 64
+    X = digits.data
+    y = digits.target
 
-        # simple splitting for validation testing
-        X_train, X_test = X[:1200], X[1200:]
-        y_train, y_test = y[:1200], y[1200:]
+    # simple splitting for validation testing
+    X_train, X_test = X[:1200], X[1200:]
+    y_train, y_test = y[:1200], y[1200:]
 
-        rfc = RandomForestClassifier()
-        rfc.fit(X_train, y_train)
+    rfc = RandomForestClassifier()
+    rfc.fit(X_train, y_train)
 
 
 1. First import an `Evaluator` object that instantiates an evaluation plan.
 Set the `estimator`, `X_test` and `y_test` to that evaluator object.
 ::
 
-        from estimators import Evaluator
+    from estimators import Evaluator
 
-        plan = Evaluator()
-        plan.estimator = rfc
-        plan.X_test = X_test
-        plan.y_test = y_test
+    plan = Evaluator()
+    plan.estimator = rfc
+    plan.X_test = X_test
+    plan.y_test = y_test
 
-        # persist all objects upon prediction
-        result = plan.evaluate()
+    # persist all objects upon prediction
+    result = plan.evaluate()
 
-        # including our predictions
-        result.y_predicted
+    # including our predictions
+    result.y_predicted
 
 
 2. At a later date, we can retrieve the results, along with the original estimator, X_test dataset and y_test dataset using sqlalchemy orm.
 ::
 
-        from estimators import DataBase, EvaluationResult
-        db = DataBase()
+    from estimators import DataBase, EvaluationResult
+    db = DataBase()
 
-        result = db.Session.query(EvaluationResult).first()
+    result = db.Session.query(EvaluationResult).first()
 
-        # which has all our attributes
-        result.id
-        result.create_date
-        result.estimator
-        result.X_test
-        result.y_test
-        result.y_predicted
+    # which has all our attributes
+    result.id
+    result.create_date
+    result.estimator
+    result.X_test
+    result.y_test
+    result.y_predicted
 
 
 Advanced Usage
@@ -94,47 +107,47 @@ Advanced Usage
 Continuing with the above example, we can pull specific estimators or datasets from our database.
 ::
 
-        from estimators import Estimator, DataSet
+    from estimators import Estimator, DataSet
 
-        # to return an estimator proxy object
-        es = db.Session.query(Estimator).first()
+    # to return an estimator proxy object
+    es = db.Session.query(Estimator)[-1]
 
-        # return our fitted RandomForestClassifier
-        es.estimator
+    # return our fitted RandomForestClassifier
+    es.estimator
 
-        # to returns all datasets as proxy objects
+    # to returns all datasets as proxy objects
 
-        ds = db.Session.query(DataSet).all()
-        ds[0].data
+    ds = db.Session.query(DataSet).all()
+    ds[0].data
 
 But we can continue on to use all of sqlalchemy's expressions
 ::
 
-        X_test_one = db.Session.query(DataSet).filter(DataSet.hash=='a381b220d0cd271d608a27eb52dfb654').first()
-        y_test_one = db.Session.query(DataSet).filter(DataSet.hash=='fe773b5c53aec02fd98ffc65feb4714d').first()
+    X_test_one = db.Session.query(DataSet).filter(DataSet.hash=='a381b220d0cd271d608a27eb52dfb654').first()
+    y_test_one = db.Session.query(DataSet).filter(DataSet.hash=='fe773b5c53aec02fd98ffc65feb4714d').first()
 
 
 Furthermore, we can run more evaluations using our new proxy objects.  The Evaluator
 object handles the proxy Estimator and DataSet objects just like regular data.
 ::
 
-        plan = Evaluator()
-        plan.estimator = es
-        plan.X_test = X_test_one
-        plan.y_test = y_test_one
+    plan = Evaluator()
+    plan.estimator = es
+    plan.X_test = X_test_one
+    plan.y_test = y_test_one
 
-        result_two = plan.evaluate()
+    result_two = plan.evaluate()
 
 
 Additionally if we want to use a different database connection, we can pass the sqlalchemy session object to the evaluator.
 ::
 
-        from estimators import DataBase
-        db = DataBase(url='sqlite://')
+    from estimators import DataBase
+    db = DataBase(url='sqlite://')
 
-        plan = Evaluator()
-        plan.session = db.Session
-        # and continue as expected otherwise
+    plan = Evaluator()
+    plan.session = db.Session
+    # and continue as expected otherwise
 
 
 Development Installation

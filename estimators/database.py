@@ -8,7 +8,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.session import sessionmaker
 
-from . import hashing
+from estimators import hashing
 
 
 class DataBase:

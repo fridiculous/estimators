@@ -1,16 +1,16 @@
 from sqlalchemy import Column, Integer
 
-from .database import Base, HashableFileMixin, PrimaryMixin
+from estimators.database import Base, HashableFileMixin, PrimaryMixin
 
 
 class DataSet(HashableFileMixin, PrimaryMixin, Base):
 
     """A database model and proxy object for datasets.
 
-    The DataSet class is the data model for the table `dataset`. 
+    The DataSet class is the data model for the table `dataset`.
 
     The DataSet object functions as a proxy for the dataset model,
-    which can be accessed by the `data` property. 
+    which can be accessed by the `data` property.
     """
 
     n_rows = Column('n_rows', Integer, nullable=False)

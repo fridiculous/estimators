@@ -3,9 +3,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble.forest import BaseForest
 
 from estimators import Estimator
+from tests.factories import EstimatorFactory
 from tests.shared import db
-
-from .factories import EstimatorFactory
 
 
 @pytest.mark.usefixtures("temporary_root_dir")
