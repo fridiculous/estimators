@@ -15,9 +15,7 @@ Machine Learning Versioning made Simple
 Intro
 -----
 
-Estimators helps version and track machine learning models and datasets.
-
-It can be used to version and deploy models.  It's highly extensible and can be used with almost any python object (scikit-learn, numpy arrays, and custom modules).
+Estimators helps organize, track machine learning models and datasets.  Estimators functions as an api for your machine learning models and datasets, to convieniently persist, retrieve and machine learning models and datasets.
 
 This repo utilizes sqlalchemy as an ORM.  If you're using django, try `django-estimators <https://github.com/fridiculous/django-estimators.git>`_ instead.
 
